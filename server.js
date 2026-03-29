@@ -9,12 +9,378 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
+// ─── FRONTEND DASHBOARD ───────────────────────────────────────────────────────
 app.get('/', (req, res) => {
-  res.json({ status: 'AI Avatar App is live' });
+  res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AI Avatar App — Dollar Double Empire</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --card: #111111;
+    --border: #222;
+    --gold: #f5c518;
+    --gold2: #e0a800;
+    --text: #f0f0f0;
+    --muted: #666;
+    --green: #00e676;
+    --red: #ff1744;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 20px 40px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: #0d0d0d;
+  }
+  header h1 { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 3px; color: var(--gold); }
+  header span { font-size: 0.75rem; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); margin-left: auto; }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: var(--gold); }
+  .card-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 2px;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+  .card-desc { font-size: 0.8rem; color: var(--muted); margin-bottom: 20px; }
+
+  label { display: block; font-size: 0.78rem; color: var(--muted); margin-bottom: 6px; letter-spacing: 1px; text-transform: uppercase; }
+  input, textarea, select {
+    width: 100%;
+    background: #181818;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 10px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    margin-bottom: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input:focus, textarea:focus { border-color: var(--gold); }
+  textarea { resize: vertical; min-height: 80px; }
+
+  button {
+    width: 100%;
+    padding: 12px;
+    background: var(--gold);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+  button:hover { background: var(--gold2); }
+  button:active { transform: scale(0.98); }
+  button:disabled { background: #333; color: #666; cursor: not-allowed; }
+
+  .result {
+    margin-top: 16px;
+    background: #181818;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    font-size: 0.85rem;
+    color: #ccc;
+    white-space: pre-wrap;
+    word-break: break-word;
+    min-height: 48px;
+    display: none;
+  }
+  .result.show { display: block; }
+  .result.error { border-color: var(--red); color: var(--red); }
+  .result.success { border-color: var(--green); }
+
+  .loader { display: inline-block; width: 14px; height: 14px; border: 2px solid #333; border-top-color: var(--gold); border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 8px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .bulk-count { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; }
+  .bulk-count input { margin-bottom: 0; width: 80px; }
+
+  audio { width: 100%; margin-top: 10px; border-radius: 8px; }
+
+  .tag {
+    display: inline-block;
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: #1a1a1a;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    margin-bottom: 16px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .empire-badge {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    color: var(--muted);
+    text-align: center;
+    padding: 30px 0 10px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>AI Avatar App</h1>
+    <span>Dollar Double Empire</span>
+  </div>
+  <div class="status-dot" title="Live"></div>
+</header>
+
+<div class="container">
+  <div class="grid">
+
+    <!-- GENERATE SCRIPT -->
+    <div class="card">
+      <div class="card-title">Generate Script</div>
+      <div class="card-desc">Turn a topic into a TikTok-ready script via OpenAI</div>
+      <span class="tag">OpenAI GPT-4</span>
+      <label>Topic</label>
+      <input id="scriptTopic" type="text" placeholder="e.g. how to make money with AI"/>
+      <button onclick="generateScript()">Generate Script</button>
+      <div class="result" id="scriptResult"></div>
+    </div>
+
+    <!-- GENERATE VOICE -->
+    <div class="card">
+      <div class="card-title">Generate Voice</div>
+      <div class="card-desc">Convert text to voiceover audio via ElevenLabs</div>
+      <span class="tag">ElevenLabs</span>
+      <label>Text</label>
+      <textarea id="voiceText" placeholder="Paste your script here..."></textarea>
+      <label>Voice ID (optional)</label>
+      <input id="voiceId" type="text" placeholder="21m00Tcm4TlvDq8ikWAM"/>
+      <button onclick="generateVoice()">Generate Voice</button>
+      <div class="result" id="voiceResult"></div>
+    </div>
+
+    <!-- GENERATE AVATAR -->
+    <div class="card">
+      <div class="card-title">Generate Avatar</div>
+      <div class="card-desc">Create a HeyGen avatar video from a script</div>
+      <span class="tag">HeyGen</span>
+      <label>Script</label>
+      <textarea id="avatarScript" placeholder="Enter the script for your avatar..."></textarea>
+      <label>Avatar ID</label>
+      <input id="avatarId" type="text" placeholder="Your HeyGen Avatar ID"/>
+      <button onclick="generateAvatar()">Generate Avatar Video</button>
+      <div class="result" id="avatarResult"></div>
+    </div>
+
+    <!-- BULK GENERATE -->
+    <div class="card">
+      <div class="card-title">Bulk Generate Scripts</div>
+      <div class="card-desc">Generate multiple scripts at once from one topic</div>
+      <span class="tag">Batch Mode</span>
+      <label>Topic</label>
+      <input id="bulkTopic" type="text" placeholder="e.g. passive income with AI"/>
+      <label>Number of Scripts</label>
+      <div class="bulk-count">
+        <input id="bulkCount" type="number" min="1" max="10" value="3"/>
+        <span style="color:var(--muted); font-size:0.8rem;">max 10</span>
+      </div>
+      <button onclick="bulkGenerate()">Bulk Generate</button>
+      <div class="result" id="bulkResult"></div>
+    </div>
+
+    <!-- CHECK VIDEO STATUS -->
+    <div class="card">
+      <div class="card-title">Check Video Status</div>
+      <div class="card-desc">Poll HeyGen for the status of a generated video</div>
+      <span class="tag">HeyGen Status</span>
+      <label>Video ID</label>
+      <input id="videoId" type="text" placeholder="HeyGen video_id from generation"/>
+      <button onclick="checkStatus()">Check Status</button>
+      <div class="result" id="statusResult"></div>
+    </div>
+
+    <!-- TIKTOK POST -->
+    <div class="card">
+      <div class="card-title">Post to TikTok</div>
+      <div class="card-desc">Auto-post a video URL directly to TikTok</div>
+      <span class="tag">TikTok API</span>
+      <label>Video URL</label>
+      <input id="tiktokUrl" type="text" placeholder="https://your-video-url.mp4"/>
+      <label>Caption</label>
+      <textarea id="tiktokCaption" placeholder="#AI #TikTok #DollarDoubleEmpire" style="min-height:60px;"></textarea>
+      <button onclick="postTikTok()">Post to TikTok</button>
+      <div class="result" id="tiktokResult"></div>
+    </div>
+
+  </div>
+  <div class="empire-badge">DOLLAR DOUBLE EMPIRE — AI AVATAR APP</div>
+</div>
+
+<script>
+const BASE = '';
+
+function setResult(id, msg, type='') {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = 'result show ' + type;
+}
+
+function setLoading(id, btnEl) {
+  const el = document.getElementById(id);
+  el.innerHTML = '<span class="loader"></span> Working...';
+  el.className = 'result show';
+  btnEl.disabled = true;
+}
+
+function resetBtn(btnEl) { btnEl.disabled = false; }
+
+async function generateScript() {
+  const topic = document.getElementById('scriptTopic').value.trim();
+  if (!topic) return alert('Enter a topic');
+  const btn = event.target;
+  setLoading('scriptResult', btn);
+  try {
+    const r = await fetch('/generate-script', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ topic })
+    });
+    const d = await r.json();
+    if (d.error) setResult('scriptResult', d.error, 'error');
+    else setResult('scriptResult', d.script, 'success');
+  } catch(e) { setResult('scriptResult', e.message, 'error'); }
+  resetBtn(btn);
+}
+
+async function generateVoice() {
+  const text = document.getElementById('voiceText').value.trim();
+  const voice_id = document.getElementById('voiceId').value.trim() || '21m00Tcm4TlvDq8ikWAM';
+  if (!text) return alert('Enter text');
+  const btn = event.target;
+  setLoading('voiceResult', btn);
+  try {
+    const r = await fetch('/generate-voice', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ text, voice_id })
+    });
+    if (!r.ok) { const d = await r.json(); setResult('voiceResult', d.error, 'error'); resetBtn(btn); return; }
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const el = document.getElementById('voiceResult');
+    el.innerHTML = '<audio controls src="' + url + '"></audio>';
+    el.className = 'result show success';
+  } catch(e) { setResult('voiceResult', e.message, 'error'); }
+  resetBtn(btn);
+}
+
+async function generateAvatar() {
+  const script = document.getElementById('avatarScript').value.trim();
+  const avatar_id = document.getElementById('avatarId').value.trim();
+  if (!script || !avatar_id) return alert('Enter script and avatar ID');
+  const btn = event.target;
+  setLoading('avatarResult', btn);
+  try {
+    const r = await fetch('/generate-avatar', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ script, avatar_id })
+    });
+    const d = await r.json();
+    if (d.error) setResult('avatarResult', d.error, 'error');
+    else setResult('avatarResult', JSON.stringify(d, null, 2), 'success');
+  } catch(e) { setResult('avatarResult', e.message, 'error'); }
+  resetBtn(btn);
+}
+
+async function bulkGenerate() {
+  const topic = document.getElementById('bulkTopic').value.trim();
+  const count = parseInt(document.getElementById('bulkCount').value) || 3;
+  if (!topic) return alert('Enter a topic');
+  const btn = event.target;
+  setLoading('bulkResult', btn);
+  try {
+    const r = await fetch('/bulk-generate', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ topic, count })
+    });
+    const d = await r.json();
+    if (d.error) setResult('bulkResult', d.error, 'error');
+    else {
+      const text = d.scripts.map((s,i) => '--- Script ' + (i+1) + ' ---\\n' + s).join('\\n\\n');
+      setResult('bulkResult', text, 'success');
+    }
+  } catch(e) { setResult('bulkResult', e.message, 'error'); }
+  resetBtn(btn);
+}
+
+async function checkStatus() {
+  const video_id = document.getElementById('videoId').value.trim();
+  if (!video_id) return alert('Enter a video ID');
+  const btn = event.target;
+  setLoading('statusResult', btn);
+  try {
+    const r = await fetch('/video-status/' + video_id);
+    const d = await r.json();
+    if (d.error) setResult('statusResult', d.error, 'error');
+    else setResult('statusResult', JSON.stringify(d, null, 2), 'success');
+  } catch(e) { setResult('statusResult', e.message, 'error'); }
+  resetBtn(btn);
+}
+
+async function postTikTok() {
+  const video_url = document.getElementById('tiktokUrl').value.trim();
+  const caption = document.getElementById('tiktokCaption').value.trim();
+  if (!video_url) return alert('Enter a video URL');
+  const btn = event.target;
+  setLoading('tiktokResult', btn);
+  try {
+    const r = await fetch('/post-tiktok', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ video_url, caption })
+    });
+    const d = await r.json();
+    if (d.error) setResult('tiktokResult', d.error, 'error');
+    else setResult('tiktokResult', JSON.stringify(d, null, 2), 'success');
+  } catch(e) { setResult('tiktokResult', e.message, 'error'); }
+  resetBtn(btn);
+}
+</script>
+</body>
+</html>`);
 });
 
+// ─── HEALTH CHECK (JSON) ──────────────────────────────────────────────────────
+app.get('/health', (req, res) => {
+  res.json({ status: 'AI Avatar App is live', version: '2.0.0' });
+});
+
+// ─── GENERATE SCRIPT ─────────────────────────────────────────────────────────
 app.post('/generate-script', async (req, res) => {
   const { topic } = req.body;
   try {
@@ -22,7 +388,7 @@ app.post('/generate-script', async (req, res) => {
       'https://api.openai.com/v1/chat/completions',
       {
         model: 'gpt-4',
-        messages: [{ role: 'user', content: `Write a 30-second TikTok script about: ${topic}` }],
+        messages: [{ role: 'user', content: `Write a punchy 30-second TikTok script about: ${topic}. No hashtags. Just the spoken words.` }],
         max_tokens: 300
       },
       { headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` } }
@@ -33,6 +399,31 @@ app.post('/generate-script', async (req, res) => {
   }
 });
 
+// ─── BULK GENERATE SCRIPTS ────────────────────────────────────────────────────
+app.post('/bulk-generate', async (req, res) => {
+  const { topic, count = 3 } = req.body;
+  const limit = Math.min(count, 10);
+  try {
+    const promises = Array.from({ length: limit }, () =>
+      axios.post(
+        'https://api.openai.com/v1/chat/completions',
+        {
+          model: 'gpt-4',
+          messages: [{ role: 'user', content: `Write a unique punchy 30-second TikTok script about: ${topic}. No hashtags. Just spoken words.` }],
+          max_tokens: 300
+        },
+        { headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` } }
+      )
+    );
+    const results = await Promise.all(promises);
+    const scripts = results.map(r => r.data.choices[0].message.content);
+    res.json({ scripts });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── GENERATE VOICE ───────────────────────────────────────────────────────────
 app.post('/generate-voice', async (req, res) => {
   const { text, voice_id = '21m00Tcm4TlvDq8ikWAM' } = req.body;
   try {
@@ -54,6 +445,7 @@ app.post('/generate-voice', async (req, res) => {
   }
 });
 
+// ─── GENERATE AVATAR VIDEO ────────────────────────────────────────────────────
 app.post('/generate-avatar', async (req, res) => {
   const { script, avatar_id } = req.body;
   try {
@@ -71,6 +463,53 @@ app.post('/generate-avatar', async (req, res) => {
     res.json(response.data);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── CHECK VIDEO STATUS ───────────────────────────────────────────────────────
+app.get('/video-status/:video_id', async (req, res) => {
+  const { video_id } = req.params;
+  try {
+    const response = await axios.get(
+      `https://api.heygen.com/v1/video_status.get?video_id=${video_id}`,
+      { headers: { 'X-Api-Key': process.env.HEYGEN_API_KEY } }
+    );
+    res.json(response.data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── POST TO TIKTOK ───────────────────────────────────────────────────────────
+app.post('/post-tiktok', async (req, res) => {
+  const { video_url, caption = '' } = req.body;
+  try {
+    // Step 1: Init upload
+    const init = await axios.post(
+      'https://open.tiktokapis.com/v2/post/publish/video/init/',
+      {
+        post_info: {
+          title: caption,
+          privacy_level: 'PUBLIC_TO_EVERYONE',
+          disable_duet: false,
+          disable_comment: false,
+          disable_stitch: false
+        },
+        source_info: {
+          source: 'PULL_FROM_URL',
+          video_url
+        }
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.TIKTOK_ACCESS_TOKEN}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    res.json({ success: true, data: init.data });
+  } catch (err) {
+    res.status(500).json({ error: err.response?.data || err.message });
   }
 });
 
