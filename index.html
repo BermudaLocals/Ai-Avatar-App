@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Dollar Double Empire — AI Ad Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Orbitron:wght@400;600;700;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#04080F;--bg2:#080F1C;--bg3:#0D1829;--gold:#FFD700;--gold2:#c8900a;--gold-dim:rgba(255,215,0,0.1);--gold-border:rgba(255,215,0,0.2);--white:#fff;--muted:rgba(255,255,255,0.42);--green:#22c55e;--red:#ef4444;--r:6px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--white);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
+
+/* SIDEBAR */
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:68px;background:var(--bg2);border-right:1px solid var(--gold-border);display:flex;flex-direction:column;align-items:center;padding:16px 0;gap:4px;z-index:200;}
+.logo-mark{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:2px;color:var(--gold);writing-mode:vertical-rl;transform:rotate(180deg);margin-bottom:20px;opacity:.8;}
+.nav-item{width:46px;height:46px;border-radius:var(--r);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;border:1px solid transparent;color:var(--muted);transition:all .2s;background:none;}
+.nav-item:hover{color:var(--gold);border-color:var(--gold-border);background:var(--gold-dim);}
+.nav-item.active{color:var(--gold);border-color:var(--gold-border);background:var(--gold-dim);}
+.nav-icon{font-size:17px;line-height:1;}
+.nav-label{font-size:7px;font-family:'Orbitron',sans-serif;letter-spacing:.5px;line-height:1;}
+
+/* MAIN */
+.main{margin-left:68px;min-height:100vh;}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 32px;border-bottom:1px solid var(--gold-border);background:rgba(4,8,15,.85);backdrop-filter:blur(16px);position:sticky;top:0;z-index:100;}
+.topbar-left{display:flex;align-items:center;gap:14px;}
+.topbar-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:4px;}
+.topbar-title span{color:var(--gold);}
+.topbar-badge{font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:3px;color:var(--gold);border:1px solid var(--gold-border);padding:3px 9px;border-radius:2px;}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse-dot 2s ease-in-out infinite;}
+@keyframes pulse-dot{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+/* SECTIONS */
+.section{display:none;padding:36px 32px;animation:fadeUp .3s ease;}
+.section.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+/* SECTION HEADER */
+.sh{margin-bottom:28px;}
+.sh h2{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:3px;line-height:1;}
+.sh h2 em{font-style:normal;color:var(--gold);}
+.sh p{margin-top:6px;color:var(--muted);font-size:13px;font-weight:300;}
+
+/* PIPELINE BAR */
+.pipeline{display:grid;grid-template-columns:repeat(6,1fr);background:var(--bg2);border:1px solid var(--gold-border);border-radius:var(--r);overflow:hidden;margin-bottom:36px;}
+.ps{padding:14px 8px;text-align:center;border-right:1px solid var(--gold-border);cursor:pointer;transition:background .2s;position:relative;}
+.ps:last-child{border-right:none;}
+.ps:hover{background:var(--gold-dim);}
+.ps.done{background:rgba(34,197,94,.05);}
+.ps-icon{font-size:20px;margin-bottom:4px;}
+.ps-label{font-family:'Orbitron',sans-serif;font-size:7px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;line-height:1.3;}
+.ps.done .ps-label{color:var(--green);}
+.ps.cur .ps-label{color:var(--gold);}
+.ps.cur{background:var(--gold-dim);}
+.ps-tick{position:absolute;top:5px;right:5px;font-size:9px;color:var(--green);display:none;}
+.ps.done .ps-tick{display:block;}
+
+/* CARD */
+.card{background:var(--bg2);border:1px solid var(--gold-border);border-radius:var(--r);padding:24px;margin-bottom:20px;}
+.card-head{display:flex;align-items:center;gap:10px;margin-bottom:18px;}
+.card-ico{width:38px;height:38px;background:var(--gold-dim);border:1px solid var(--gold-border);border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.card-ttl{font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:2.5px;color:var(--gold);text-transform:uppercase;}
+.card-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+
+/* FORM */
+.form-row{margin-bottom:16px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+label{display:block;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-family:'Orbitron',sans-serif;margin-bottom:7px;}
+input,textarea,select{width:100%;background:var(--bg3);border:1px solid var(--gold-border);border-radius:var(--r);color:var(--white);padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color .2s;resize:vertical;}
+input:focus,textarea:focus,select:focus{border-color:rgba(255,215,0,.55);box-shadow:0 0 0 3px rgba(255,215,0,.05);}
+select option{background:var(--bg2);}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:12px 24px;border-radius:var(--r);font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;border:none;cursor:pointer;transition:all .2s;font-weight:700;white-space:nowrap;}
+.btn-gold{background:linear-gradient(135deg,var(--gold) 0%,#d4a800 100%);color:#000;}
+.btn-gold:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(255,215,0,.3);}
+.btn-outline{background:transparent;border:1px solid var(--gold-border);color:var(--gold);}
+.btn-outline:hover{background:var(--gold-dim);}
+.btn-sm{padding:8px 14px;font-size:8px;}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none!important;box-shadow:none!important;}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;}
+
+/* OUTPUT */
+.out{background:var(--bg3);border:1px solid var(--gold-border);border-radius:var(--r);padding:18px;font-size:13px;line-height:1.75;color:rgba(255,255,255,.82);white-space:pre-wrap;word-break:break-word;min-height:72px;}
+.out.empty{color:var(--muted);font-style:italic;font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:2px;display:flex;align-items:center;justify-content:center;min-height:90px;}
+.out.err{border-color:var(--red);color:var(--red);}
+.out.ok{border-color:rgba(34,197,94,.3);}
+
+/* STATUS */
+.status{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:20px;font-size:9px;font-family:'Orbitron',sans-serif;letter-spacing:1px;}
+.s-load{background:rgba(255,215,0,.08);color:var(--gold);border:1px solid var(--gold-border);}
+.s-ok{background:rgba(34,197,94,.08);color:var(--green);border:1px solid rgba(34,197,94,.3);}
+.s-err{background:rgba(239,68,68,.08);color:var(--red);border:1px solid rgba(239,68,68,.3);}
+.spin{display:inline-block;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* GRID LAYOUTS */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+
+/* AD STUDIO PREVIEW */
+.studio-wrap{display:grid;grid-template-columns:420px 1fr;gap:28px;align-items:start;}
+.preview-frame{width:420px;aspect-ratio:1;background:#000;border-radius:var(--r);overflow:hidden;border:1px solid var(--gold-border);position:relative;}
+.preview-frame.vertical{aspect-ratio:9/16;max-height:520px;}
+.preview-img{width:100%;height:100%;object-fit:cover;display:none;}
+.preview-placeholder{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--muted);}
+.preview-placeholder .big{font-size:48px;}
+.preview-placeholder p{font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:2px;}
+
+/* CONCEPT CARDS */
+.concept-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px;}
+.concept-item{background:var(--bg3);border:1px solid var(--gold-border);border-radius:var(--r);padding:14px;}
+.concept-key{font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:2px;color:var(--gold);margin-bottom:8px;text-transform:uppercase;}
+.concept-val{font-size:13px;line-height:1.6;color:rgba(255,255,255,.85);}
+.concept-item.full{grid-column:1/-1;}
+
+/* CAMPAIGN SELECTOR */
+.camp-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
+.camp-card{background:var(--bg3);border:2px solid var(--gold-border);border-radius:var(--r);padding:14px 10px;text-align:center;cursor:pointer;transition:all .2s;}
+.camp-card:hover{border-color:rgba(255,215,0,.5);}
+.camp-card.sel{border-color:var(--gold);background:var(--gold-dim);}
+.camp-icon{font-size:24px;margin-bottom:6px;}
+.camp-name{font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:1.5px;color:var(--muted);}
+.camp-card.sel .camp-name{color:var(--gold);}
+
+/* DIVIDER */
+.div{height:1px;background:linear-gradient(90deg,var(--gold-border),transparent);margin:22px 0;}
+
+/* HOME */
+.home-hero{text-align:center;padding:56px 0 44px;}
+.home-hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(52px,8vw,100px);letter-spacing:5px;line-height:.92;}
+.home-hero h1 span{color:var(--gold);display:block;}
+.home-hero .sub{margin-top:18px;font-size:15px;color:var(--muted);max-width:500px;margin-inline:auto;line-height:1.75;font-weight:300;}
+.home-hero .tagline{display:inline-block;margin-top:14px;font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:4px;color:rgba(255,215,0,.5);border:1px solid var(--gold-border);padding:5px 14px;border-radius:2px;}
+.feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:44px;}
+.feat{background:var(--bg2);border:1px solid var(--gold-border);border-radius:var(--r);padding:22px;text-align:left;transition:border-color .2s;cursor:pointer;}
+.feat:hover{border-color:rgba(255,215,0,.5);}
+.feat-icon{font-size:28px;margin-bottom:12px;}
+.feat-title{font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:2px;color:var(--gold);margin-bottom:8px;}
+.feat-desc{font-size:12px;color:var(--muted);line-height:1.65;font-weight:300;}
+.feat-new{display:inline-block;font-size:7px;font-family:'Orbitron',sans-serif;letter-spacing:2px;color:#000;background:var(--gold);padding:2px 6px;border-radius:2px;margin-bottom:8px;}
+
+/* BULK RESULTS */
+.bulk-item{background:var(--bg3);border:1px solid var(--gold-border);border-radius:var(--r);padding:16px;margin-bottom:12px;}
+.bulk-num{font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:2px;color:var(--gold);margin-bottom:8px;}
+.bulk-text{font-size:13px;line-height:1.7;color:rgba(255,255,255,.82);}
+.bulk-actions{margin-top:10px;display:flex;gap:8px;}
+
+/* AUDIO PLAYER */
+audio{width:100%;margin-top:12px;border-radius:var(--r);accent-color:var(--gold);}
+
+/* USE BUTTON */
+.use-btn{font-size:8px;padding:5px 10px;}
+
+/* FOOTER */
+footer{border-top:1px solid var(--gold-border);padding:20px 32px;margin-left:68px;display:flex;align-items:center;justify-content:space-between;}
+footer p{font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:3px;color:var(--muted);}
+
+@media(max-width:900px){
+  .sidebar{width:52px;}.main{margin-left:52px;}.studio-wrap{grid-template-columns:1fr;}.two-col,.three-col,.concept-grid,.form-grid,.feature-grid,.camp-grid{grid-template-columns:1fr;}.pipeline{grid-template-columns:repeat(3,1fr);}.topbar{padding:14px 18px;}
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="logo-mark">DDE</div>
+  <div class="nav-item active" onclick="showSection('home',this)" title="Home">
+    <div class="nav-icon">🏠</div><div class="nav-label">Home</div>
+  </div>
+  <div class="nav-item" onclick="showSection('studio',this)" title="Ad Studio">
+    <div class="nav-icon">🎯</div><div class="nav-label">Studio</div>
+  </div>
+  <div class="nav-item" onclick="showSection('image',this)" title="Image">
+    <div class="nav-icon">🖼️</div><div class="nav-label">Image</div>
+  </div>
+  <div class="nav-item" onclick="showSection('voice',this)" title="Voice">
+    <div class="nav-icon">🎙️</div><div class="nav-label">Voice</div>
+  </div>
+  <div class="nav-item" onclick="showSection('avatar',this)" title="Avatar">
+    <div class="nav-icon">🤖</div><div class="nav-label">Avatar</div>
+  </div>
+  <div class="nav-item" onclick="showSection('publish',this)" title="Publish">
+    <div class="nav-icon">🚀</div><div class="nav-label">Publish</div>
+  </div>
+</nav>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-title">DOLLAR DOUBLE <span>EMPIRE</span></div>
+    <div class="topbar-badge">AI AD STUDIO v3</div>
+  </div>
+  <div class="live-dot" title="Server live"></div>
+</div>
+
+<!-- ═══════════════ HOME ═══════════════ -->
+<div id="sec-home" class="section main active">
+  <div class="home-hero">
+    <h1>CREATE ADS THAT<span>PRINT MONEY.</span></h1>
+    <p class="sub">The only AI pipeline that takes you from raw idea to a fully produced, published ad — script, image, voice, avatar video, and TikTok post.</p>
+    <div class="tagline">POWERED BY CLAUDE · DALL-E 3 · ELEVENLABS · HEYGEN</div>
+  </div>
+
+  <div class="feature-grid">
+    <div class="feat" onclick="showSection('studio',document.querySelector('.nav-item:nth-child(3)'))">
+      <div class="feat-new">NEW</div>
+      <div class="feat-icon">🎯</div>
+      <div class="feat-title">Ad Studio</div>
+      <div class="feat-desc">Full ad concept in one click. Claude generates your headline, hook, script, image prompt, and caption — all at once.</div>
+    </div>
+    <div class="feat" onclick="showSection('image',document.querySelector('.nav-item:nth-child(4)'))">
+      <div class="feat-new">NEW</div>
+      <div class="feat-icon">🖼️</div>
+      <div class="feat-title">Image Generator</div>
+      <div class="feat-desc">DALL-E 3 HD creates your cinematic ad visuals. Paste any prompt or use the one Claude generates for you.</div>
+    </div>
+    <div class="feat" onclick="showSection('voice',document.querySelector('.nav-item:nth-child(5)'))">
+      <div class="feat-icon">🎙️</div>
+      <div class="feat-title">Voice & Avatar</div>
+      <div class="feat-desc">ElevenLabs voiceover + HeyGen avatar video. Your ad, delivered by a professional AI presenter at 1080p.</div>
+    </div>
+    <div class="feat" onclick="showSection('studio',document.querySelector('.nav-item:nth-child(3)'))">
+      <div class="feat-icon">⚡</div>
+      <div class="feat-title">One-Click Pipeline</div>
+      <div class="feat-desc">Use the Ad Studio to generate everything, then flow each output into the next step with a single click.</div>
+    </div>
+    <div class="feat" onclick="showSection('avatar',document.querySelector('.nav-item:nth-child(6)'))">
+      <div class="feat-icon">🤖</div>
+      <div class="feat-title">Bulk Scripts</div>
+      <div class="feat-desc">Generate up to 10 unique script variations from one topic for split-testing at scale.</div>
+    </div>
+    <div class="feat" onclick="showSection('publish',document.querySelector('.nav-item:nth-child(7)'))">
+      <div class="feat-icon">🚀</div>
+      <div class="feat-title">Auto-Publish</div>
+      <div class="feat-desc">Post directly to TikTok via the API the moment your video is ready. Zero friction.</div>
+    </div>
+  </div>
+
+  <div class="div"></div>
+  <div style="text-align:center;">
+    <button class="btn btn-gold" style="font-size:13px;padding:16px 40px;" onclick="showSection('studio',document.querySelector('.nav-item:nth-child(3)'))">
+      ⚡ &nbsp;START CREATING
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════ AD STUDIO ═══════════════ -->
+<div id="sec-studio" class="section main">
+  <div class="sh">
+    <h2>AD <em>STUDIO</em></h2>
+    <p>One topic → full ad concept generated by Claude AI. Then flow each piece into the pipeline.</p>
+  </div>
+
+  <!-- Pipeline Progress -->
+  <div class="pipeline">
+    <div class="ps cur" id="ps1"><div class="ps-icon">💡</div><div class="ps-label">Concept</div><div class="ps-tick">✓</div></div>
+    <div class="ps" id="ps2"><div class="ps-icon">🖼️</div><div class="ps-label">Image</div><div class="ps-tick">✓</div></div>
+    <div class="ps" id="ps3"><div class="ps-icon">🎙️</div><div class="ps-label">Voice</div><div class="ps-tick">✓</div></div>
+    <div class="ps" id="ps4"><div class="ps-icon">🤖</div><div class="ps-label">Avatar</div><div class="ps-tick">✓</div></div>
+    <div class="ps" id="ps5"><div class="ps-icon">✅</div><div class="ps-label">Status</div><div class="ps-tick">✓</div></div>
+    <div class="ps" id="ps6"><div class="ps-icon">🚀</div><div class="ps-label">Publish</div><div class="ps-tick">✓</div></div>
+  </div>
+
+  <div class="studio-wrap">
+    <!-- LEFT: Controls -->
+    <div>
+      <div class="card">
+        <div class="card-head">
+          <div class="card-ico">💡</div>
+          <div><div class="card-ttl">Step 1 — Ad Concept</div><div class="card-sub">Claude generates your complete ad in seconds</div></div>
+        </div>
+
+        <div class="form-row">
+          <label>Campaign Topic</label>
+          <input id="studioTopic" type="text" placeholder="e.g. AGI is here — are you ready?"/>
+        </div>
+
+        <div class="form-row">
+          <label>Campaign Type</label>
+          <div class="camp-grid">
+            <div class="camp-card sel" data-type="authority" onclick="selectCamp(this)">
+              <div class="camp-icon">📰</div><div class="camp-name">Authority</div>
+            </div>
+            <div class="camp-card" data-type="fear" onclick="selectCamp(this)">
+              <div class="camp-icon">⚠️</div><div class="camp-name">Fear Hook</div>
+            </div>
+            <div class="camp-card" data-type="curiosity" onclick="selectCamp(this)">
+              <div class="camp-icon">🤔</div><div class="camp-name">Curiosity</div>
+            </div>
+            <div class="camp-card" data-type="transformation" onclick="selectCamp(this)">
+              <div class="camp-icon">💰</div><div class="camp-name">Transform</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-row">
+            <label>Platform</label>
+            <select id="studioPlatform">
+              <option value="tiktok">TikTok (9:16)</option>
+              <option value="instagram">Instagram (1:1)</option>
+              <option value="youtube">YouTube Shorts</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>Avatar ID</label>
+            <input id="studioAvatarId" type="text" placeholder="HeyGen Avatar ID"/>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-gold" id="conceptBtn" onclick="generateConcept()">⚡ Generate Full Concept</button>
+        </div>
+
+        <div id="conceptStatus" style="margin-top:14px;"></div>
+      </div>
+
+      <!-- CONCEPT OUTPUT -->
+      <div class="card" id="conceptCard" style="display:none;">
+        <div class="card-head">
+          <div class="card-ico">✨</div>
+          <div><div class="card-ttl">Ad Concept</div><div class="card-sub">Click any field to use it in the next step</div></div>
+        </div>
+        <div class="concept-grid" id="conceptGrid"></div>
+        <div class="div"></div>
+        <div class="btn-row">
+          <button class="btn btn-gold btn-sm" onclick="flowToImage()">🖼️ Generate Image →</button>
+          <button class="btn btn-outline btn-sm" onclick="flowToVoice()">🎙️ Generate Voice →</button>
+          <button class="btn btn-outline btn-sm" onclick="flowToAvatar()">🤖 Generate Avatar →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Live Preview -->
+    <div>
+      <div class="card">
+        <div class="card-head">
+          <div class="card-ico">👁️</div>
+          <div><div class="card-ttl">Ad Preview</div><div class="card-sub">Generated image appears here</div></div>
+        </div>
+        <div class="preview-frame" id="previewFrame">
+          <div class="preview-placeholder" id="previewPlaceholder">
+            <div class="big">🎨</div>
+            <p>AWAITING GENERATION</p>
+          </div>
+          <img id="previewImg" class="preview-img" src="" alt="Ad Preview"/>
+        </div>
+        <div id="previewMeta" style="margin-top:12px;display:none;">
+          <div class="form-row" style="margin-bottom:0;">
+            <label>Revised Prompt (DALL-E)</label>
+            <div class="out" id="revisedPromptOut" style="font-size:11px;min-height:auto;"></div>
+          </div>
+          <div class="btn-row">
+            <a id="downloadBtn" class="btn btn-outline btn-sm" download="ad-image.jpg">⬇ Download</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ IMAGE GENERATOR ═══════════════ -->
+<div id="sec-image" class="section main">
+  <div class="sh">
+    <h2>IMAGE <em>GENERATOR</em></h2>
+    <p>DALL-E 3 HD — cinematic ad visuals at the highest quality setting.</p>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <div class="card">
+        <div class="card-head">
+          <div class="card-ico">🖼️</div>
+          <div><div class="card-ttl">DALL-E 3 HD</div><div class="card-sub">Vivid style · HD quality</div></div>
+        </div>
+        <div class="form-row">
+          <label>Image Prompt</label>
+          <textarea id="imgPrompt" rows="6" placeholder="Describe your ad visual in detail. The more specific, the better. Style, lighting, composition, mood, text overlays..."></textarea>
+        </div>
+        <div class="form-row">
+          <label>Format / Size</label>
+          <select id="imgSize">
+            <option value="1024x1024">1024×1024 — Square (Instagram)</option>
+            <option value="1024x1792">1024×1792 — Vertical (TikTok / Reels)</option>
+            <option value="1792x1024">1792×1024 — Horizontal (YouTube)</option>
+          </select>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-gold" id="imgBtn" onclick="generateImage()">🖼️ Generate Image</button>
+        </div>
+        <div id="imgStatus" style="margin-top:14px;"></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card" style="height:100%;">
+        <div class="card-head">
+          <div class="card-ico">✨</div>
+          <div><div class="card-ttl">Result</div><div class="card-sub">HD image output</div></div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--gold-border);border-radius:var(--r);overflow:hidden;min-height:300px;display:flex;align-items:center;justify-content:center;">
+          <img id="imgResult" src="" style="max-width:100%;display:none;" alt="Generated ad image"/>
+          <div id="imgPlaceholder" style="color:var(--muted);font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:2px;">IMAGE WILL APPEAR HERE</div>
+        </div>
+        <div id="imgMeta" style="margin-top:12px;display:none;">
+          <label style="margin-bottom:6px;">Revised Prompt</label>
+          <div class="out" id="imgRevisedOut" style="font-size:11px;min-height:auto;"></div>
+          <div class="btn-row">
+            <a id="imgDownloadBtn" class="btn btn-outline btn-sm" download="ad.jpg">⬇ Download</a>
+            <button class="btn btn-outline btn-sm" onclick="sendImgToStudio()">→ Send to Studio</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ VOICE ═══════════════ -->
+<div id="sec-voice" class="section main">
+  <div class="sh">
+    <h2>VOICE <em>STUDIO</em></h2>
+    <p>ElevenLabs turbo v2 — professional voiceover from your script.</p>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-ico">🎙️</div>
+        <div><div class="card-ttl">Generate Voice</div><div class="card-sub">ElevenLabs · Turbo v2</div></div>
+      </div>
+      <div class="form-row">
+        <label>Script / Text</label>
+        <textarea id="voiceText" rows="7" placeholder="Paste your ad script here..."></textarea>
+      </div>
+      <div class="form-row">
+        <label>Voice ID <span style="color:var(--muted);font-size:9px;">(leave blank for default)</span></label>
+        <input id="voiceId" type="text" placeholder="21m00Tcm4TlvDq8ikWAM"/>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-gold" id="voiceBtn" onclick="generateVoice()">🎙️ Generate Voiceover</button>
+      </div>
+      <div id="voiceStatus" style="margin-top:14px;"></div>
+      <div id="voiceResult" style="margin-top:14px;"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-ico">📝</div>
+        <div><div class="card-ttl">Quick Script</div><div class="card-sub">Generate a script topic → paste into voice</div></div>
+      </div>
+      <div class="form-row">
+        <label>Topic</label>
+        <input id="quickTopic" type="text" placeholder="e.g. how AI is replacing jobs in 2025"/>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-outline" id="quickScriptBtn" onclick="generateQuickScript()">⚡ Generate Script</button>
+      </div>
+      <div id="quickScriptStatus" style="margin-top:14px;"></div>
+      <div class="form-row" style="margin-top:14px;">
+        <label>Generated Script</label>
+        <div class="out empty" id="quickScriptOut">SCRIPT WILL APPEAR HERE</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-outline btn-sm" onclick="sendScriptToVoice()">→ Send to Voice</button>
+        <button class="btn btn-outline btn-sm" onclick="sendScriptToAvatar()">→ Send to Avatar</button>
+      </div>
+
+      <div class="div"></div>
+
+      <div class="card-head" style="margin-bottom:14px;">
+        <div class="card-ico">📦</div>
+        <div><div class="card-ttl">Bulk Scripts</div><div class="card-sub">Up to 10 variations</div></div>
+      </div>
+      <div class="form-grid">
+        <div class="form-row">
+          <label>Topic</label>
+          <input id="bulkTopic" type="text" placeholder="topic..."/>
+        </div>
+        <div class="form-row">
+          <label>Count (max 10)</label>
+          <input id="bulkCount" type="number" min="1" max="10" value="3"/>
+        </div>
+      </div>
+      <button class="btn btn-outline" id="bulkBtn" onclick="bulkGenerate()">📦 Bulk Generate</button>
+      <div id="bulkStatus" style="margin-top:14px;"></div>
+      <div id="bulkResult" style="margin-top:14px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ AVATAR ═══════════════ -->
+<div id="sec-avatar" class="section main">
+  <div class="sh">
+    <h2>AVATAR <em>VIDEO</em></h2>
+    <p>HeyGen — 1080×1920 AI avatar video from your script.</p>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-ico">🤖</div>
+        <div><div class="card-ttl">Generate Avatar</div><div class="card-sub">HeyGen · 1080×1920</div></div>
+      </div>
+      <div class="form-row">
+        <label>Script</label>
+        <textarea id="avatarScript" rows="6" placeholder="Enter the script your avatar will speak..."></textarea>
+      </div>
+      <div class="form-row">
+        <label>Avatar ID</label>
+        <input id="avatarId" type="text" placeholder="Your HeyGen Avatar ID"/>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-gold" id="avatarBtn" onclick="generateAvatar()">🤖 Generate Avatar Video</button>
+      </div>
+      <div id="avatarStatus" style="margin-top:14px;"></div>
+      <div class="form-row" style="margin-top:16px;">
+        <label>Response</label>
+        <div class="out empty" id="avatarResult">RESPONSE WILL APPEAR HERE</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-ico">📡</div>
+        <div><div class="card-ttl">Check Video Status</div><div class="card-sub">Poll HeyGen for render progress</div></div>
+      </div>
+      <div class="form-row">
+        <label>Video ID</label>
+        <input id="videoId" type="text" placeholder="HeyGen video_id from the response above"/>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-gold" id="statusBtn" onclick="checkStatus()">📡 Check Status</button>
+        <button class="btn btn-outline" id="autoPollBtn" onclick="startAutoPoll()">🔄 Auto-Poll</button>
+      </div>
+      <div id="statusStatus" style="margin-top:14px;"></div>
+      <div class="form-row" style="margin-top:16px;">
+        <label>Status Result</label>
+        <div class="out empty" id="statusResult">STATUS WILL APPEAR HERE</div>
+      </div>
+      <div id="videoReadyActions" style="display:none;margin-top:12px;">
+        <div class="status s-ok" style="margin-bottom:12px;">✓ &nbsp;VIDEO READY</div>
+        <div class="btn-row">
+          <button class="btn btn-outline btn-sm" onclick="sendVideoToPublish()">🚀 Publish to TikTok →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ PUBLISH ═══════════════ -->
+<div id="sec-publish" class="section main">
+  <div class="sh">
+    <h2>PUBLISH TO <em>TIKTOK</em></h2>
+    <p>Auto-post your video directly to TikTok via the API.</p>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-ico">🚀</div>
+        <div><div class="card-ttl">Post to TikTok</div><div class="card-sub">TikTok Content Posting API</div></div>
+      </div>
+      <div class="form-row">
+        <label>Video URL</label>
+        <input id="tiktokUrl" type="text" placeholder="https://your-cdn-video-url.mp4"/>
+      </div>
+      <div class="form-row">
+        <label>Caption</label>
+        <textarea id="tiktokCaption" rows="4" placeholder="Your caption and hashtags..."></textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-gold" id="tiktokBtn" onclick="postTikTok()">🚀 Post to TikTok</button>
+      </div>
+      <div id="tiktokStatus" style="margin-top:14px;"></div>
+      <div class="form-row" style="margin-top:16px;">
+        <label>Result</label>
+        <div class="out empty" id="tiktokResult">RESULT WILL APPEAR HERE</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-ico">📋</div>
+        <div><div class="card-ttl">Publishing Checklist</div><div class="card-sub">Before you post</div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;" id="chk1">
+          <span style="font-size:18px;">⬜</span><span>Ad concept generated</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;" id="chk2">
+          <span style="font-size:18px;">⬜</span><span>Ad image generated</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;" id="chk3">
+          <span style="font-size:18px;">⬜</span><span>Voiceover generated</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;" id="chk4">
+          <span style="font-size:18px;">⬜</span><span>Avatar video generated</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;" id="chk5">
+          <span style="font-size:18px;">⬜</span><span>Video status = complete</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;" id="chk6">
+          <span style="font-size:18px;">⬜</span><span>Caption ready</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>DOLLAR DOUBLE EMPIRE — AI AD STUDIO v3.0</p>
+  <p>CLAUDE · DALL-E 3 · ELEVENLABS · HEYGEN · TIKTOK</p>
+</footer>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────
+const state = {
+  concept: null,
+  imageUrl: null,
+  script: null,
+  videoId: null,
+  videoUrl: null,
+  caption: null,
+  campaignType: 'authority',
+  pollInterval: null,
+};
+
+// ─── NAVIGATION ──────────────────────────────────────────
+function showSection(id, navEl) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('sec-' + id).classList.add('active');
+  if (navEl) navEl.classList.add('active');
+}
+
+function selectCamp(el) {
+  document.querySelectorAll('.camp-card').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+  state.campaignType = el.dataset.type;
+}
+
+// ─── STATUS HELPERS ───────────────────────────────────────
+function setStatus(id, type, msg) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (!msg) { el.innerHTML = ''; return; }
+  const icons = { load: '<span class="spin">⟳</span>', ok: '✓', err: '✕' };
+  el.innerHTML = `<div class="status s-${type}">${icons[type] || ''} &nbsp;${msg}</div>`;
+}
+
+function setOut(id, text, cls = '') {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.className = 'out' + (cls ? ' ' + cls : '');
+  el.textContent = text;
+}
+
+function setBtn(id, disabled) {
+  const el = document.getElementById(id);
+  if (el) el.disabled = disabled;
+}
+
+function tick(checkId) {
+  const el = document.getElementById(checkId);
+  if (el) el.querySelector('span').textContent = '✅';
+}
+
+// ─── API CALL ─────────────────────────────────────────────
+async function api(path, body, method = 'POST') {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(path, opts);
+  if (!r.ok) {
+    let err;
+    try { err = (await r.json()).error; } catch { err = r.statusText; }
+    throw new Error(err || 'Request failed');
+  }
+  return r;
+}
+
+// ─── GENERATE FULL CONCEPT ───────────────────────────────
+async function generateConcept() {
+  const topic = document.getElementById('studioTopic').value.trim();
+  const platform = document.getElementById('studioPlatform').value;
+  if (!topic) return alert('Enter a campaign topic');
+  setBtn('conceptBtn', true);
+  setStatus('conceptStatus', 'load', 'Claude is generating your full ad concept…');
+  document.getElementById('conceptCard').style.display = 'none';
+  try {
+    const r = await api('/generate-ad-concept', { topic, campaign_type: state.campaignType, platform });
+    const { concept } = await r.json();
+    state.concept = concept;
+    state.script = concept.script;
+    state.caption = concept.caption;
+    renderConcept(concept);
+    setStatus('conceptStatus', 'ok', 'Ad concept ready!');
+    tick('chk1');
+    pipelineDone('ps1');
+  } catch (err) {
+    setStatus('conceptStatus', 'err', err.message);
+  }
+  setBtn('conceptBtn', false);
+}
+
+function renderConcept(c) {
+  const grid = document.getElementById('conceptGrid');
+  grid.innerHTML = `
+    <div class="concept-item"><div class="concept-key">🔥 Headline</div><div class="concept-val" style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--gold);">${c.headline}</div></div>
+    <div class="concept-item"><div class="concept-key">⚡ Hook (3s)</div><div class="concept-val">${c.hook}</div></div>
+    <div class="concept-item full"><div class="concept-key">🎙️ Script (30s)</div><div class="concept-val">${c.script}</div></div>
+    <div class="concept-item full"><div class="concept-key">🖼️ Image Prompt</div><div class="concept-val" style="font-size:12px;">${c.image_prompt}</div></div>
+    <div class="concept-item"><div class="concept-key">📝 Caption</div><div class="concept-val" style="font-size:12px;">${c.caption}</div></div>
+    <div class="concept-item"><div class="concept-key">📣 CTA</div><div class="concept-val">${c.cta}</div></div>
+  `;
+  document.getElementById('conceptCard').style.display = 'block';
+}
+
+// ─── FLOW BUTTONS ─────────────────────────────────────────
+async function flowToImage() {
+  if (!state.concept) return;
+  const platform = document.getElementById('studioPlatform').value;
+  const size = platform === 'tiktok' || platform === 'youtube' ? '1024x1792' : '1024x1024';
+  document.getElementById('imgPrompt').value = state.concept.image_prompt;
+  document.getElementById('imgSize').value = size;
+  showSection('image', document.querySelector('.nav-item:nth-child(4)'));
+  await generateImage();
+}
+
+function flowToVoice() {
+  if (!state.concept) return;
+  document.getElementById('voiceText').value = state.concept.script;
+  showSection('voice', document.querySelector('.nav-item:nth-child(5)'));
+}
+
+function flowToAvatar() {
+  if (!state.concept) return;
+  document.getElementById('avatarScript').value = state.concept.script;
+  const avId = document.getElementById('studioAvatarId').value.trim();
+  if (avId) document.getElementById('avatarId').value = avId;
+  showSection('avatar', document.querySelector('.nav-item:nth-child(6)'));
+}
+
+// ─── GENERATE IMAGE ───────────────────────────────────────
+async function generateImage() {
+  const prompt = document.getElementById('imgPrompt').value.trim();
+  const size = document.getElementById('imgSize').value;
+  if (!prompt) return alert('Enter an image prompt');
+  setBtn('imgBtn', true);
+  setStatus('imgStatus', 'load', 'DALL-E 3 HD is generating your image (30–60s)…');
+  document.getElementById('imgResult').style.display = 'none';
+  document.getElementById('imgPlaceholder').style.display = 'flex';
+  document.getElementById('imgMeta').style.display = 'none';
+  try {
+    const r = await api('/generate-image', { prompt, size });
+    const { image_url, revised_prompt } = await r.json();
+    state.imageUrl = image_url;
+
+    // show in image tab
+    const img = document.getElementById('imgResult');
+    img.src = image_url;
+    img.style.display = 'block';
+    document.getElementById('imgPlaceholder').style.display = 'none';
+    document.getElementById('imgRevisedOut').textContent = revised_prompt;
+    document.getElementById('imgDownloadBtn').href = image_url;
+    document.getElementById('imgMeta').style.display = 'block';
+
+    // also show in studio preview
+    showImageInStudio(image_url, revised_prompt);
+
+    setStatus('imgStatus', 'ok', 'Image generated!');
+    tick('chk2');
+    pipelineDone('ps2');
+  } catch (err) {
+    setStatus('imgStatus', 'err', err.message);
+  }
+  setBtn('imgBtn', false);
+}
+
+function showImageInStudio(url, revised) {
+  const img = document.getElementById('previewImg');
+  img.src = url; img.style.display = 'block';
+  document.getElementById('previewPlaceholder').style.display = 'none';
+  document.getElementById('revisedPromptOut').textContent = revised;
+  document.getElementById('downloadBtn').href = url;
+  document.getElementById('previewMeta').style.display = 'block';
+}
+
+function sendImgToStudio() {
+  showImageInStudio(state.imageUrl, document.getElementById('imgRevisedOut').textContent);
+  showSection('studio', document.querySelector('.nav-item:nth-child(3)'));
+}
+
+// ─── QUICK SCRIPT ─────────────────────────────────────────
+async function generateQuickScript() {
+  const topic = document.getElementById('quickTopic').value.trim();
+  if (!topic) return alert('Enter a topic');
+  setBtn('quickScriptBtn', true);
+  setStatus('quickScriptStatus', 'load', 'Generating script…');
+  try {
+    const r = await api('/generate-script', { topic });
+    const { script } = await r.json();
+    state.script = script;
+    const el = document.getElementById('quickScriptOut');
+    el.className = 'out ok';
+    el.textContent = script;
+    setStatus('quickScriptStatus', 'ok', 'Script ready');
+  } catch (err) {
+    setStatus('quickScriptStatus', 'err', err.message);
+  }
+  setBtn('quickScriptBtn', false);
+}
+
+function sendScriptToVoice() {
+  const s = document.getElementById('quickScriptOut').textContent;
+  if (!s || s === 'SCRIPT WILL APPEAR HERE') return;
+  document.getElementById('voiceText').value = s;
+}
+function sendScriptToAvatar() {
+  const s = document.getElementById('quickScriptOut').textContent;
+  if (!s || s === 'SCRIPT WILL APPEAR HERE') return;
+  document.getElementById('avatarScript').value = s;
+}
+
+// ─── BULK GENERATE ────────────────────────────────────────
+async function bulkGenerate() {
+  const topic = document.getElementById('bulkTopic').value.trim();
+  const count = parseInt(document.getElementById('bulkCount').value) || 3;
+  if (!topic) return alert('Enter a topic');
+  setBtn('bulkBtn', true);
+  setStatus('bulkStatus', 'load', `Generating ${count} script variations…`);
+  document.getElementById('bulkResult').innerHTML = '';
+  try {
+    const r = await api('/bulk-generate', { topic, count });
+    const { scripts } = await r.json();
+    const container = document.getElementById('bulkResult');
+    container.innerHTML = scripts.map((s, i) => `
+      <div class="bulk-item">
+        <div class="bulk-num">VARIATION ${i + 1}</div>
+        <div class="bulk-text">${s}</div>
+        <div class="bulk-actions">
+          <button class="btn btn-outline use-btn" onclick="useScript(${i})">→ Use This</button>
+        </div>
+      </div>
+    `).join('');
+    window._bulkScripts = scripts;
+    setStatus('bulkStatus', 'ok', `${scripts.length} scripts ready`);
+  } catch (err) {
+    setStatus('bulkStatus', 'err', err.message);
+  }
+  setBtn('bulkBtn', false);
+}
+
+function useScript(i) {
+  const s = window._bulkScripts[i];
+  document.getElementById('voiceText').value = s;
+  document.getElementById('avatarScript').value = s;
+  document.getElementById('quickScriptOut').className = 'out ok';
+  document.getElementById('quickScriptOut').textContent = s;
+}
+
+// ─── GENERATE VOICE ───────────────────────────────────────
+async function generateVoice() {
+  const text = document.getElementById('voiceText').value.trim();
+  const voice_id = document.getElementById('voiceId').value.trim() || '21m00Tcm4TlvDq8ikWAM';
+  if (!text) return alert('Enter text');
+  setBtn('voiceBtn', true);
+  setStatus('voiceStatus', 'load', 'ElevenLabs generating voiceover…');
+  document.getElementById('voiceResult').innerHTML = '';
+  try {
+    const r = await fetch('/generate-voice', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text, voice_id}) });
+    if (!r.ok) { const d = await r.json(); throw new Error(d.error); }
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    document.getElementById('voiceResult').innerHTML = `<audio controls src="${url}"></audio>`;
+    setStatus('voiceStatus', 'ok', 'Voiceover ready');
+    tick('chk3');
+    pipelineDone('ps3');
+  } catch (err) {
+    setStatus('voiceStatus', 'err', err.message);
+  }
+  setBtn('voiceBtn', false);
+}
+
+// ─── GENERATE AVATAR ──────────────────────────────────────
+async function generateAvatar() {
+  const script = document.getElementById('avatarScript').value.trim();
+  const avatar_id = document.getElementById('avatarId').value.trim();
+  if (!script || !avatar_id) return alert('Enter script and avatar ID');
+  setBtn('avatarBtn', true);
+  setStatus('avatarStatus', 'load', 'HeyGen rendering avatar video…');
+  try {
+    const r = await api('/generate-avatar', { script, avatar_id });
+    const d = await r.json();
+    if (d.data?.video_id) {
+      state.videoId = d.data.video_id;
+      document.getElementById('videoId').value = d.data.video_id;
+    }
+    setOut('avatarResult', JSON.stringify(d, null, 2), 'ok');
+    setStatus('avatarStatus', 'ok', 'Avatar job submitted — check status below');
+    tick('chk4');
+    pipelineDone('ps4');
+  } catch (err) {
+    setStatus('avatarStatus', 'err', err.message);
+    setOut('avatarResult', err.message, 'err');
+  }
+  setBtn('avatarBtn', false);
+}
+
+// ─── CHECK STATUS ─────────────────────────────────────────
+async function checkStatus() {
+  const video_id = document.getElementById('videoId').value.trim();
+  if (!video_id) return alert('Enter a video ID');
+  setBtn('statusBtn', true);
+  setStatus('statusStatus', 'load', 'Checking status…');
+  try {
+    const r = await fetch('/video-status/' + video_id);
+    const d = await r.json();
+    setOut('statusResult', JSON.stringify(d, null, 2), 'ok');
+    const status = d?.data?.status;
+    if (status === 'completed') {
+      setStatus('statusStatus', 'ok', 'Video complete!');
+      const vUrl = d?.data?.video_url;
+      if (vUrl) {
+        state.videoUrl = vUrl;
+        document.getElementById('tiktokUrl').value = vUrl;
+      }
+      document.getElementById('videoReadyActions').style.display = 'block';
+      tick('chk5');
+      pipelineDone('ps5');
+      stopAutoPoll();
+    } else {
+      setStatus('statusStatus', 'load', `Status: ${status || 'processing'}`);
+    }
+  } catch (err) {
+    setStatus('statusStatus', 'err', err.message);
+  }
+  setBtn('statusBtn', false);
+}
+
+let pollTimer = null;
+function startAutoPoll() {
+  const video_id = document.getElementById('videoId').value.trim();
+  if (!video_id) return alert('Enter a video ID first');
+  if (pollTimer) return;
+  document.getElementById('autoPollBtn').textContent = '⏹ Stop Polling';
+  document.getElementById('autoPollBtn').onclick = stopAutoPoll;
+  checkStatus();
+  pollTimer = setInterval(checkStatus, 10000);
+}
+function stopAutoPoll() {
+  clearInterval(pollTimer); pollTimer = null;
+  document.getElementById('autoPollBtn').textContent = '🔄 Auto-Poll';
+  document.getElementById('autoPollBtn').onclick = startAutoPoll;
+}
+
+function sendVideoToPublish() {
+  if (state.caption) document.getElementById('tiktokCaption').value = state.caption;
+  showSection('publish', document.querySelector('.nav-item:nth-child(7)'));
+}
+
+// ─── POST TIKTOK ──────────────────────────────────────────
+async function postTikTok() {
+  const video_url = document.getElementById('tiktokUrl').value.trim();
+  const caption = document.getElementById('tiktokCaption').value.trim();
+  if (!video_url) return alert('Enter a video URL');
+  setBtn('tiktokBtn', true);
+  setStatus('tiktokStatus', 'load', 'Posting to TikTok…');
+  try {
+    const r = await api('/post-tiktok', { video_url, caption });
+    const d = await r.json();
+    setOut('tiktokResult', JSON.stringify(d, null, 2), 'ok');
+    setStatus('tiktokStatus', 'ok', 'Posted to TikTok!');
+    tick('chk6');
+    pipelineDone('ps6');
+  } catch (err) {
+    setStatus('tiktokStatus', 'err', err.message);
+    setOut('tiktokResult', err.message, 'err');
+  }
+  setBtn('tiktokBtn', false);
+}
+
+// ─── PIPELINE UI ──────────────────────────────────────────
+function pipelineDone(id) {
+  const el = document.getElementById(id);
+  if (el) { el.classList.remove('cur'); el.classList.add('done'); }
+}
+</script>
+</body>
+</html>
