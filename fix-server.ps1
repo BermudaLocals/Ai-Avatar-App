@@ -1,0 +1,222 @@
+$path = "C:\Users\admin\Desktop\Ai Avatar App\server.js"
+
+$content = @'
+import express from 'express';
+import cors from 'cors';
+import axios from 'axios';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+const PORT = process.env.PORT || 8080;
+
+app.get('/', (req, res) => {
+  res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>AI Avatar App</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#0a0a0a;--card:#111;--border:#222;--gold:#f5c518;--gold2:#e0a800;--text:#f0f0f0;--muted:#666;--green:#00e676;--red:#ff1744;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:"DM Sans",sans-serif;min-height:100vh;}
+header{border-bottom:1px solid var(--border);padding:20px 40px;display:flex;align-items:center;gap:16px;background:#0d0d0d;}
+header h1{font-family:"Bebas Neue",sans-serif;font-size:2rem;letter-spacing:3px;color:var(--gold);}
+header span{font-size:.75rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);margin-left:auto;}
+.container{max-width:1100px;margin:0 auto;padding:40px 20px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:28px;transition:border-color .2s;}
+.card:hover{border-color:var(--gold);}
+.card-title{font-family:"Bebas Neue",sans-serif;font-size:1.3rem;letter-spacing:2px;color:var(--gold);margin-bottom:6px;}
+.card-desc{font-size:.8rem;color:var(--muted);margin-bottom:20px;}
+label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:6px;letter-spacing:1px;text-transform:uppercase;}
+input,textarea{width:100%;background:#181818;border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px 14px;font-family:"DM Sans",sans-serif;font-size:.9rem;margin-bottom:14px;outline:none;transition:border-color .2s;}
+input:focus,textarea:focus{border-color:var(--gold);}
+textarea{resize:vertical;min-height:80px;}
+button{width:100%;padding:12px;background:var(--gold);color:#000;border:none;border-radius:8px;font-family:"Bebas Neue",sans-serif;font-size:1rem;letter-spacing:2px;cursor:pointer;transition:background .2s,transform .1s;}
+button:hover{background:var(--gold2);}
+button:active{transform:scale(.98);}
+button:disabled{background:#333;color:#666;cursor:not-allowed;}
+.result{margin-top:16px;background:#181818;border:1px solid var(--border);border-radius:8px;padding:14px;font-size:.85rem;color:#ccc;white-space:pre-wrap;word-break:break-word;min-height:48px;display:none;}
+.result.show{display:block;}
+.result.error{border-color:var(--red);color:var(--red);}
+.result.success{border-color:var(--green);}
+.loader{display:inline-block;width:14px;height:14px;border:2px solid #333;border-top-color:var(--gold);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:8px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+audio{width:100%;margin-top:10px;border-radius:8px;}
+.tag{display:inline-block;font-size:.65rem;padding:2px 8px;border-radius:20px;background:#1a1a1a;border:1px solid var(--border);color:var(--muted);margin-bottom:16px;letter-spacing:1px;text-transform:uppercase;}
+.footer{font-family:"Bebas Neue",sans-serif;font-size:.7rem;letter-spacing:3px;color:var(--muted);text-align:center;padding:30px 0 10px;}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>AI Avatar App</h1><span>Dollar Double Empire</span></div>
+  <div class="dot"></div>
+</header>
+<div class="container">
+  <div class="grid">
+    <div class="card">
+      <div class="card-title">Generate Script</div>
+      <div class="card-desc">Turn a topic into a TikTok-ready script via OpenAI</div>
+      <span class="tag">OpenAI GPT-4</span>
+      <label>Topic</label>
+      <input id="scriptTopic" type="text" placeholder="e.g. how to make money with AI"/>
+      <button onclick="generateScript(event)">Generate Script</button>
+      <div class="result" id="scriptResult"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Generate Voice</div>
+      <div class="card-desc">Convert text to voiceover audio via ElevenLabs</div>
+      <span class="tag">ElevenLabs</span>
+      <label>Text</label>
+      <textarea id="voiceText" placeholder="Paste your script here..."></textarea>
+      <label>Voice ID (optional)</label>
+      <input id="voiceId" type="text" placeholder="21m00Tcm4TlvDq8ikWAM"/>
+      <button onclick="generateVoice(event)">Generate Voice</button>
+      <div class="result" id="voiceResult"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Generate Avatar</div>
+      <div class="card-desc">Create a HeyGen avatar video from a script</div>
+      <span class="tag">HeyGen</span>
+      <label>Script</label>
+      <textarea id="avatarScript" placeholder="Enter the script for your avatar..."></textarea>
+      <label>Avatar ID</label>
+      <input id="avatarId" type="text" placeholder="Your HeyGen Avatar ID"/>
+      <button onclick="generateAvatar(event)">Generate Avatar Video</button>
+      <div class="result" id="avatarResult"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Bulk Generate Scripts</div>
+      <div class="card-desc">Generate multiple scripts at once from one topic</div>
+      <span class="tag">Batch Mode</span>
+      <label>Topic</label>
+      <input id="bulkTopic" type="text" placeholder="e.g. passive income with AI"/>
+      <label>Number of Scripts (max 10)</label>
+      <input id="bulkCount" type="number" min="1" max="10" value="3"/>
+      <button onclick="bulkGenerate(event)">Bulk Generate</button>
+      <div class="result" id="bulkResult"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Check Video Status</div>
+      <div class="card-desc">Poll HeyGen for the status of a generated video</div>
+      <span class="tag">HeyGen Status</span>
+      <label>Video ID</label>
+      <input id="videoId" type="text" placeholder="HeyGen video_id"/>
+      <button onclick="checkStatus(event)">Check Status</button>
+      <div class="result" id="statusResult"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Post to TikTok</div>
+      <div class="card-desc">Auto-post a video URL directly to TikTok</div>
+      <span class="tag">TikTok API</span>
+      <label>Video URL</label>
+      <input id="tiktokUrl" type="text" placeholder="https://your-video-url.mp4"/>
+      <label>Caption</label>
+      <textarea id="tiktokCaption" placeholder="#AI #TikTok #DollarDoubleEmpire" style="min-height:60px;"></textarea>
+      <button onclick="postTikTok(event)">Post to TikTok</button>
+      <div class="result" id="tiktokResult"></div>
+    </div>
+  </div>
+  <div class="footer">DOLLAR DOUBLE EMPIRE — AI AVATAR APP</div>
+</div>
+<script>
+function setResult(id,msg,type){const el=document.getElementById(id);el.textContent=msg;el.className="result show "+(type||"");}
+function setLoading(id,btn){const el=document.getElementById(id);el.innerHTML='<span class="loader"></span> Working...';el.className="result show";btn.disabled=true;}
+function resetBtn(btn){btn.disabled=false;}
+async function generateScript(e){const topic=document.getElementById("scriptTopic").value.trim();if(!topic)return alert("Enter a topic");const btn=e.target;setLoading("scriptResult",btn);try{const r=await fetch("/generate-script",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({topic})});const d=await r.json();d.error?setResult("scriptResult",d.error,"error"):setResult("scriptResult",d.script,"success");}catch(err){setResult("scriptResult",err.message,"error");}resetBtn(btn);}
+async function generateVoice(e){const text=document.getElementById("voiceText").value.trim();const voice_id=document.getElementById("voiceId").value.trim()||"21m00Tcm4TlvDq8ikWAM";if(!text)return alert("Enter text");const btn=e.target;setLoading("voiceResult",btn);try{const r=await fetch("/generate-voice",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text,voice_id})});if(!r.ok){const d=await r.json();setResult("voiceResult",d.error,"error");resetBtn(btn);return;}const blob=await r.blob();const url=URL.createObjectURL(blob);const el=document.getElementById("voiceResult");el.innerHTML='<audio controls src="'+url+'"></audio>';el.className="result show success";}catch(err){setResult("voiceResult",err.message,"error");}resetBtn(btn);}
+async function generateAvatar(e){const script=document.getElementById("avatarScript").value.trim();const avatar_id=document.getElementById("avatarId").value.trim();if(!script||!avatar_id)return alert("Enter script and avatar ID");const btn=e.target;setLoading("avatarResult",btn);try{const r=await fetch("/generate-avatar",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({script,avatar_id})});const d=await r.json();d.error?setResult("avatarResult",d.error,"error"):setResult("avatarResult",JSON.stringify(d,null,2),"success");}catch(err){setResult("avatarResult",err.message,"error");}resetBtn(btn);}
+async function bulkGenerate(e){const topic=document.getElementById("bulkTopic").value.trim();const count=parseInt(document.getElementById("bulkCount").value)||3;if(!topic)return alert("Enter a topic");const btn=e.target;setLoading("bulkResult",btn);try{const r=await fetch("/bulk-generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({topic,count})});const d=await r.json();if(d.error){setResult("bulkResult",d.error,"error");}else{const text=d.scripts.map((s,i)=>"--- Script "+(i+1)+" ---\n"+s).join("\n\n");setResult("bulkResult",text,"success");}}catch(err){setResult("bulkResult",err.message,"error");}resetBtn(btn);}
+async function checkStatus(e){const video_id=document.getElementById("videoId").value.trim();if(!video_id)return alert("Enter a video ID");const btn=e.target;setLoading("statusResult",btn);try{const r=await fetch("/video-status/"+video_id);const d=await r.json();d.error?setResult("statusResult",d.error,"error"):setResult("statusResult",JSON.stringify(d,null,2),"success");}catch(err){setResult("statusResult",err.message,"error");}resetBtn(btn);}
+async function postTikTok(e){const video_url=document.getElementById("tiktokUrl").value.trim();const caption=document.getElementById("tiktokCaption").value.trim();if(!video_url)return alert("Enter a video URL");const btn=e.target;setLoading("tiktokResult",btn);try{const r=await fetch("/post-tiktok",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({video_url,caption})});const d=await r.json();d.error?setResult("tiktokResult",d.error,"error"):setResult("tiktokResult",JSON.stringify(d,null,2),"success");}catch(err){setResult("tiktokResult",err.message,"error");}resetBtn(btn);}
+</script>
+</body>
+</html>`);
+});
+
+app.get('/health', (req, res) => {
+  res.json({ status: 'AI Avatar App is live', version: '2.0.0' });
+});
+
+app.post('/generate-script', async (req, res) => {
+  const { topic } = req.body;
+  try {
+    const response = await axios.post('https://api.openai.com/v1/chat/completions',
+      { model: 'gpt-4', messages: [{ role: 'user', content: `Write a punchy 30-second TikTok script about: ${topic}. No hashtags. Just spoken words.` }], max_tokens: 300 },
+      { headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` } }
+    );
+    res.json({ script: response.data.choices[0].message.content });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.post('/bulk-generate', async (req, res) => {
+  const { topic, count = 3 } = req.body;
+  const limit = Math.min(count, 10);
+  try {
+    const promises = Array.from({ length: limit }, () =>
+      axios.post('https://api.openai.com/v1/chat/completions',
+        { model: 'gpt-4', messages: [{ role: 'user', content: `Write a unique punchy 30-second TikTok script about: ${topic}. No hashtags. Just spoken words.` }], max_tokens: 300 },
+        { headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` } }
+      )
+    );
+    const results = await Promise.all(promises);
+    res.json({ scripts: results.map(r => r.data.choices[0].message.content) });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.post('/generate-voice', async (req, res) => {
+  const { text, voice_id = '21m00Tcm4TlvDq8ikWAM' } = req.body;
+  try {
+    const response = await axios.post(`https://api.elevenlabs.io/v1/text-to-speech/${voice_id}`,
+      { text, model_id: 'eleven_monolingual_v1' },
+      { headers: { 'xi-api-key': process.env.ELEVENLABS_API_KEY, 'Content-Type': 'application/json' }, responseType: 'arraybuffer' }
+    );
+    res.set('Content-Type', 'audio/mpeg');
+    res.send(response.data);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.post('/generate-avatar', async (req, res) => {
+  const { script, avatar_id } = req.body;
+  try {
+    const response = await axios.post('https://api.heygen.com/v2/video/generate',
+      { video_inputs: [{ character: { type: 'avatar', avatar_id }, voice: { type: 'text', input_text: script } }], dimension: { width: 1080, height: 1920 } },
+      { headers: { 'X-Api-Key': process.env.HEYGEN_API_KEY } }
+    );
+    res.json(response.data);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.get('/video-status/:video_id', async (req, res) => {
+  try {
+    const response = await axios.get(`https://api.heygen.com/v1/video_status.get?video_id=${req.params.video_id}`,
+      { headers: { 'X-Api-Key': process.env.HEYGEN_API_KEY } }
+    );
+    res.json(response.data);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.post('/post-tiktok', async (req, res) => {
+  const { video_url, caption = '' } = req.body;
+  try {
+    const init = await axios.post('https://open.tiktokapis.com/v2/post/publish/video/init/',
+      { post_info: { title: caption, privacy_level: 'PUBLIC_TO_EVERYONE', disable_duet: false, disable_comment: false, disable_stitch: false }, source_info: { source: 'PULL_FROM_URL', video_url } },
+      { headers: { Authorization: `Bearer ${process.env.TIKTOK_ACCESS_TOKEN}`, 'Content-Type': 'application/json' } }
+    );
+    res.json({ success: true, data: init.data });
+  } catch (err) { res.status(500).json({ error: err.response?.data || err.message }); }
+});
+
+app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
+'@
+
+Set-Content -Path $path -Value $content -Encoding UTF8
+Write-Host "server.js written successfully!"
